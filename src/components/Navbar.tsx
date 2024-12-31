@@ -20,7 +20,9 @@ const Navbar = () => {
         </span>
         box
       </div>
-      <FaGithub size={24} className="cursor-pointer" />
+      <a href="https://github.com/aryanjha256/algobox" target="_blank">
+        <FaGithub size={24} className="cursor-pointer" />
+      </a>
     </nav>
   );
 };

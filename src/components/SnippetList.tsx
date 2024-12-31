@@ -4,9 +4,14 @@ import { nord } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import Modal from "./Modal";
 import { useState } from "react";
 import { MdDone } from "react-icons/md";
-import { toast } from "sonner";
 
-const snippets = [
+interface Snippet {
+  name: string;
+  description: string;
+  code: string;
+}
+
+const snippets: Snippet[] = [
   {
     name: "Hello World",
     description: "Prints Hello World",
@@ -76,18 +81,22 @@ console.log(sortedArray); // Output: [1, 2, 3, 4, 5, 6, 7, 8]`,
 const SnippetList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [currentSnippet, setCurrentSnippet] = useState<Snippet | null>(null);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
-      toast.success("Copied!");
       setTimeout(() => {
         setCopied(false);
       }, 2000);
     });
   };
 
-  const openModal = () => setIsModalOpen(true);
+  const openModal = (snippet: Snippet) => {
+    setCurrentSnippet(snippet);
+
+    setIsModalOpen(true);
+  };
   const closeModal = () => setIsModalOpen(false);
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-20 px-8 md:px-20">
@@ -98,15 +107,12 @@ const SnippetList = () => {
         >
           <div className="flex justify-between items-center">
             <p className="font-bold">{snippet.name}</p>
-            <BiExpand className="cursor-pointer" onClick={openModal} />
+            <BiExpand
+              className="cursor-pointer"
+              onClick={() => openModal(snippet)}
+            />
           </div>
           <div className="mt-4 text-sm p-4 border-zinc-600 border rounded-md relative bg-zinc-800 h-44">
-            <button
-              className="absolute top-2 right-2 text-zinc-400 text-sm p-2 bg-zinc-700 rounded-md z-10"
-              onClick={() => copyToClipboard(snippet.code)}
-            >
-              <BiCopy className="cursor-pointer" />
-            </button>
             <SyntaxHighlighter
               language="javascript"
               style={nord}
@@ -128,11 +134,18 @@ const SnippetList = () => {
         </div>
       ))}
 
-      <Modal isOpen={isModalOpen} onClose={closeModal} heading="Hello World">
+      <Modal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        heading={currentSnippet?.name}
+      >
         <div className="mt-4 text-sm p-4 border-zinc-600 border rounded-md relative bg-zinc-800">
           <button
             className="absolute top-2 right-2 text-zinc-400 text-sm p-2 bg-zinc-700 rounded-md z-10"
-            onClick={() => copyToClipboard(snippets[3].code)}
+            onClick={() => {
+              if (!currentSnippet) return;
+              copyToClipboard(currentSnippet.code);
+            }}
           >
             {copied ? (
               <MdDone className="text-green-600" />
@@ -153,7 +166,7 @@ const SnippetList = () => {
             wrapLongLines={true}
             showLineNumbers={true}
           >
-            {snippets[3].code}
+            {currentSnippet?.code ?? ""}
           </SyntaxHighlighter>
         </div>
       </Modal>
